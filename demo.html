@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guinea Pig Village - Enhanced Graphics Demo</title>
+    <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(45deg, #DEB887, #F5DEB3);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .demo-container {
+            background: #CD853F;
+            border: 4px solid #8B4513;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .controls button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #45a049;
+        }
+
+        .info {
+            text-align: center;
+            max-width: 640px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        h1 {
+            color: #8B4513;
+            margin-bottom: 10px;
+        }
+
+        .features {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .features li {
+            background: #E8F5E8;
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h1>🐹 Guinea Pig Village - Enhanced Graphics Demo</h1>
+        <p>Deze demo toont de verbeterde graphics engine met Konva.js. Klik op de knoppen om verschillende features te testen!</p>
+        <ul class="features">
+            <li>✨ Vloeiende animaties</li>
+            <li>🌤️ Bewegende wolken</li>
+            <li>👁️ Knipperende oogjes</li>
+            <li>🚶 Lopende animaties</li>
+            <li>💨 Particle effects</li>
+            <li>🥕 Zwevende objecten</li>
+        </ul>
+    </div>
+
+    <div class="demo-container">
+        <div id="gameContainer"></div>
+    </div>
+
+    <div class="controls">
+        <button onclick="addPig()">🐹 Voeg Guinea Pig Toe</button>
+        <button onclick="addCarrot()">🥕 Voeg Wortel Toe</button>
+        <button onclick="startWalking()">🚶 Start Lopen</button>
+        <button onclick="stopWalking()">✋ Stop Lopen</button>
+        <button onclick="createCoins()">💰 Munt Effect</button>
+        <button onclick="createHearts()">💖 Hart Effect</button>
+        <button onclick="randomizeColors()">🎨 Verander Kleur</button>
+        <button onclick="toggleMusic()">🎵 Music On/Off</button>
+        <button onclick="testSounds()">🔊 Test Sounds</button>
+        <button onclick="clearAll()">🧹 Maak Leeg</button>
+    </div>
+
+    <script src="graphics-engine.js"></script>
+    <script src="enhanced-audio.js"></script>
+    <script>
+        // Initialize graphics engine and audio
+        const graphics = new GraphicsEngine('gameContainer', 640, 480);
+        const audio = new EnhancedAudioSystem();
+        let pigs = [];
+        let carrots = [];
+        
+        // Enable audio on first user interaction
+        document.addEventListener('click', () => {
+            audio.resumeContext();
+        }, { once: true });
+
+        // Demo functions
+        function addPig() {
+            const colors = ['brown', 'white', 'black', 'ginger', 'gray'];
+            const accessories = ['none', 'bow', 'hat'];
+            
+            const config = {
+                furColor: colors[Math.floor(Math.random() * colors.length)],
+                accessory: accessories[Math.floor(Math.random() * accessories.length)]
+            };
+            
+            const x = 100 + Math.random() * 440;
+            const y = 200 + Math.random() * 200;
+            
+            const pig = graphics.createGuineaPig(x, y, config);
+            pigs.push(pig);
+            
+            graphics.characterLayer.draw();
+        }
+
+        function addCarrot() {
+            const x = 100 + Math.random() * 440;
+            const y = 150 + Math.random() * 200;
+            
+            const carrot = graphics.createCarrot(x, y);
+            carrots.push(carrot);
+            
+            graphics.gameLayer.draw();
+        }
+
+        function startWalking() {
+            pigs.forEach(pig => {
+                const direction = Math.random() > 0.5 ? 'left' : 'right';
+                graphics.startWalkingAnimation(pig, direction);
+            });
+        }
+
+        function stopWalking() {
+            pigs.forEach(pig => {
+                graphics.stopWalkingAnimation(pig);
+            });
+        }
+
+        function createCoins() {
+            const x = 200 + Math.random() * 240;
+            const y = 200 + Math.random() * 100;
+            graphics.createParticleEffect(x, y, 'coins');
+            audio.playSound('coin');
+        }
+
+        function createHearts() {
+            const x = 200 + Math.random() * 240;
+            const y = 200 + Math.random() * 100;
+            graphics.createParticleEffect(x, y, 'hearts');
+            audio.playSound('happy');
+        }
+
+        function randomizeColors() {
+            const colors = ['brown', 'white', 'black', 'ginger', 'gray'];
+            
+            pigs.forEach(pig => {
+                const newColor = colors[Math.floor(Math.random() * colors.length)];
+                const colorHex = graphics.getFurColor(newColor);
+                
+                // Update body and head colors
+                pig.getChildren().forEach(child => {
+                    if (child.getClassName() === 'Circle' || child.getClassName() === 'Ellipse') {
+                        if (child.fill() !== 'black' && child.fill() !== 'white' && child.fill() !== 'pink') {
+                            child.fill(colorHex);
+                        }
+                    }
+                });
+            });
+            
+            graphics.characterLayer.draw();
+        }
+
+        function clearAll() {
+            pigs.forEach(pig => pig.destroy());
+            carrots.forEach(carrot => carrot.destroy());
+            pigs = [];
+            carrots = [];
+            
+            graphics.characterLayer.draw();
+            graphics.gameLayer.draw();
+        }
+        
+        function toggleMusic() {
+            if (audio.backgroundMusic.playing) {
+                audio.stopBackgroundMusic();
+            } else {
+                audio.startBackgroundMusic();
+            }
+        }
+        
+        function testSounds() {
+            const sounds = ['click', 'happy', 'coin', 'eat', 'walk'];
+            let index = 0;
+            
+            const playNext = () => {
+                if (index < sounds.length) {
+                    audio.playSound(sounds[index]);
+                    index++;
+                    setTimeout(playNext, 500);
+                }
+            };
+            
+            playNext();
+        }
+
+        // Add some initial content
+        addPig();
+        addCarrot();
+        
+        // Show a welcome effect
+        setTimeout(() => {
+            createHearts();
+            audio.startBackgroundMusic();
+        }, 1000);
+    </script>
+</body>
+</html>
