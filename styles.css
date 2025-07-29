@@ -7,7 +7,7 @@
 
 body {
     font-family: 'Courier New', monospace;
-    background: linear-gradient(45deg, #8B4513, #D2691E);
+    background: linear-gradient(45deg, #DEB887, #F5DEB3); /* Warmer, cream-based gradient */
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -18,7 +18,7 @@ body {
 /* Game container */
 .game-container {
     position: relative;
-    background: #654321;
+    background: #CD853F; /* Sandy brown to match the guinea pig */
     border: 4px solid #8B4513;
     border-radius: 8px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
@@ -31,7 +31,7 @@ body {
     image-rendering: -webkit-crisp-edges;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    background: #228B22;
+    background: #90EE90; /* Softer green for grass */
     border: 2px solid #333;
 }
 
@@ -40,7 +40,7 @@ body {
 }
 
 #previewCanvas {
-    background: #87CEEB;
+    background: #F0F8FF; /* Light blue for preview background */
     border-radius: 4px;
 }
 
@@ -107,8 +107,8 @@ body {
 
 /* Buttons */
 button {
-    background: #8B4513;
-    border: 2px solid #654321;
+    background: #CD853F; /* Sandy brown to match the design */
+    border: 2px solid #8B4513;
     color: white;
     padding: 8px 16px;
     border-radius: 6px;
@@ -120,7 +120,7 @@ button {
 }
 
 button:hover {
-    background: #A0522D;
+    background: #DEB887; /* Lighter brown on hover */
     transform: translateY(-1px);
 }
 
@@ -141,7 +141,7 @@ button:active {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: linear-gradient(135deg, #F5DEB3, #DEB887);
+    background: linear-gradient(135deg, #F5DEB3, #DEB887); /* Cream gradient */
     border: 4px solid #8B4513;
     border-radius: 12px;
     padding: 24px;

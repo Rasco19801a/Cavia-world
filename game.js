@@ -105,7 +105,7 @@ class Game {
     resetGuineaPig() {
         document.getElementById('pigName').value = '';
         document.getElementById('furType').value = 'short';
-        document.getElementById('furColor').value = 'brown';
+        document.getElementById('furColor').value = 'patches'; // Default to patches like in example
         document.getElementById('accessory').value = 'none';
         this.updatePreview();
     }
@@ -191,7 +191,7 @@ class GameState {
             name: 'Piggy',
             appearance: {
                 furType: 'short',
-                furColor: 'brown',
+                furColor: 'patches', // Default to patches like in example
                 accessory: 'none'
             },
             x: 10,
@@ -218,7 +218,7 @@ class GameState {
         localStorage.removeItem('guineaPigVillage');
         this.player = {
             name: 'Piggy',
-            appearance: { furType: 'short', furColor: 'brown', accessory: 'none' },
+            appearance: { furType: 'short', furColor: 'patches', accessory: 'none' }, // Default to patches
             x: 10, y: 8, coins: 0, healthStars: 0, styleBadges: 0, inventory: []
         };
     }
@@ -384,7 +384,7 @@ class CustomizationScene extends Scene {
     update(deltaTime) {}
     
     render(ctx) {
-        ctx.fillStyle = '#87CEEB';
+        ctx.fillStyle = '#F0F8FF'; // Light blue background for customization
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     }
 }
@@ -502,11 +502,11 @@ class VillageScene extends Scene {
     
     render(ctx) {
         // Clear canvas
-        ctx.fillStyle = '#228B22';
+        ctx.fillStyle = '#90EE90'; // Softer green base
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         
         // Draw grass pattern
-        ctx.fillStyle = '#32CD32';
+        ctx.fillStyle = '#98FB98';
         for (let x = 0; x < this.mapWidth; x++) {
             for (let y = 0; y < this.mapHeight; y++) {
                 if ((x + y) % 2 === 0) {
@@ -958,69 +958,136 @@ class SpriteRenderer {
     }
     
     drawGuineaPig(ctx, x, y, appearance, scale = 2) {
+        // Color palette inspired by the example image
         const colors = {
-            brown: '#8B4513',
-            white: '#FFFFFF',
+            brown: '#CD853F',     // Sandy brown like in the image
+            white: '#F5F5DC',     // Beige/cream white
             black: '#2F2F2F',
-            ginger: '#FF6347',
-            gray: '#808080',
-            patches: ['#FFFFFF', '#8B4513'],
-            tricolor: ['#FFFFFF', '#8B4513', '#2F2F2F']
+            ginger: '#D2691E',    // Orange-brown from the image
+            gray: '#A9A9A9',
+            patches: ['#F5F5DC', '#CD853F'], // Cream and brown patches
+            tricolor: ['#F5F5DC', '#CD853F', '#8B4513'] // Cream, brown, dark brown
         };
         
-        const baseColor = colors[appearance.furColor];
+        const baseColor = colors[appearance.furColor] || colors.brown;
+        const outlineColor = '#000000'; // Black outline like in the example
+        const bellyColor = '#F5F5DC';   // Cream belly color
         
-        // Body (oval)
+        // Helper function to draw with outline
+        const drawWithOutline = (fillColor, outlineWidth = scale) => {
+            ctx.fillStyle = outlineColor;
+            return fillColor;
+        };
+        
+        // Save context for easier restoration
+        ctx.save();
+        
+        // Body outline (larger rounded rectangle)
+        ctx.fillStyle = outlineColor;
+        ctx.fillRect(x - 10*scale, y - 6*scale, 20*scale, 12*scale); // Body outline
+        ctx.fillRect(x - 8*scale, y - 8*scale, 16*scale, 16*scale);   // Head outline
+        
+        // Body fill (main color)
         ctx.fillStyle = Array.isArray(baseColor) ? baseColor[0] : baseColor;
-        ctx.fillRect(x - 8*scale, y - 4*scale, 16*scale, 8*scale);
+        ctx.fillRect(x - 9*scale, y - 5*scale, 18*scale, 10*scale); // Main body
         
-        // Head (circle)
-        ctx.fillRect(x - 6*scale, y - 8*scale, 12*scale, 8*scale);
+        // Head fill
+        ctx.fillRect(x - 7*scale, y - 7*scale, 14*scale, 14*scale);
         
-        // Patches for multicolor
+        // Belly/chest area (cream colored like in the image)
+        ctx.fillStyle = bellyColor;
+        ctx.fillRect(x - 6*scale, y - 2*scale, 12*scale, 6*scale); // Belly
+        ctx.fillRect(x - 4*scale, y - 6*scale, 8*scale, 6*scale);  // Face/chest
+        
+        // Patches for multicolor varieties
         if (Array.isArray(baseColor)) {
             ctx.fillStyle = baseColor[1];
-            ctx.fillRect(x - 4*scale, y - 6*scale, 4*scale, 4*scale);
+            // Patch on face
+            ctx.fillRect(x - 3*scale, y - 6*scale, 6*scale, 4*scale);
+            // Patch on body
+            ctx.fillRect(x + 2*scale, y - 3*scale, 5*scale, 4*scale);
+            
             if (baseColor.length > 2) {
                 ctx.fillStyle = baseColor[2];
-                ctx.fillRect(x + 2*scale, y - 2*scale, 3*scale, 3*scale);
+                ctx.fillRect(x - 6*scale, y - 1*scale, 4*scale, 3*scale);
             }
         }
         
-        // Fur texture based on type
-        ctx.fillStyle = '#000';
+        // Eyes (black dots with white highlights like in the example)
+        ctx.fillStyle = outlineColor;
+        ctx.fillRect(x - 4*scale, y - 5*scale, 2*scale, 2*scale); // Left eye
+        ctx.fillRect(x + 2*scale, y - 5*scale, 2*scale, 2*scale);  // Right eye
+        
+        // Eye highlights
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(x - 4*scale, y - 5*scale, scale, scale); // Left highlight
+        ctx.fillRect(x + 2*scale, y - 5*scale, scale, scale);  // Right highlight
+        
+        // Ears with outline
+        ctx.fillStyle = outlineColor;
+        ctx.fillRect(x - 7*scale, y - 9*scale, 3*scale, 4*scale); // Left ear outline
+        ctx.fillRect(x + 4*scale, y - 9*scale, 3*scale, 4*scale); // Right ear outline
+        
+        // Ear fills
+        ctx.fillStyle = Array.isArray(baseColor) ? baseColor[0] : baseColor;
+        ctx.fillRect(x - 6*scale, y - 8*scale, scale, 2*scale); // Left ear
+        ctx.fillRect(x + 5*scale, y - 8*scale, scale, 2*scale); // Right ear
+        
+        // Nose (small dark triangle)
+        ctx.fillStyle = outlineColor;
+        ctx.fillRect(x - scale/2, y - 3*scale, scale, scale);
+        
+        // Feet (small dark rectangles)
+        ctx.fillStyle = outlineColor;
+        ctx.fillRect(x - 7*scale, y + 3*scale, 2*scale, 2*scale); // Front left
+        ctx.fillRect(x - 3*scale, y + 3*scale, 2*scale, 2*scale); // Front right
+        ctx.fillRect(x + 2*scale, y + 3*scale, 2*scale, 2*scale); // Back left
+        ctx.fillRect(x + 6*scale, y + 3*scale, 2*scale, 2*scale); // Back right
+        
+        // Fur texture based on type (more subtle than before)
         if (appearance.furType === 'long') {
-            // Draw longer fur spikes
-            for (let i = 0; i < 6; i++) {
-                ctx.fillRect(x - 8*scale + i*3*scale, y + 4*scale, scale, 2*scale);
+            ctx.fillStyle = Array.isArray(baseColor) ? baseColor[1] || baseColor[0] : baseColor;
+            // Softer fur spikes
+            for (let i = 0; i < 4; i++) {
+                ctx.fillRect(x - 6*scale + i*3*scale, y + 2*scale, scale, scale);
             }
         } else if (appearance.furType === 'rosette') {
-            // Draw rosette patterns
+            ctx.fillStyle = outlineColor;
+            // Small rosette patterns
             ctx.fillRect(x - 2*scale, y - 2*scale, scale, scale);
-            ctx.fillRect(x + 2*scale, y - 2*scale, scale, scale);
+            ctx.fillRect(x + 2*scale, y, scale, scale);
         } else if (appearance.furType === 'ridgeback') {
-            // Draw ridge down the back
-            ctx.fillRect(x - scale/2, y - 6*scale, scale, 10*scale);
+            ctx.fillStyle = outlineColor;
+            // Ridge pattern down the back
+            for (let i = 0; i < 3; i++) {
+                ctx.fillRect(x - scale/2, y - 4*scale + i*2*scale, scale, scale);
+            }
         }
-        
-        // Eyes
-        ctx.fillStyle = '#000';
-        ctx.fillRect(x - 4*scale, y - 6*scale, scale, scale);
-        ctx.fillRect(x + 2*scale, y - 6*scale, scale, scale);
-        
-        // Ears
-        ctx.fillRect(x - 6*scale, y - 10*scale, 2*scale, 3*scale);
-        ctx.fillRect(x + 4*scale, y - 10*scale, 2*scale, 3*scale);
         
         // Accessories
         if (appearance.accessory === 'bow') {
+            // Bow outline
+            ctx.fillStyle = outlineColor;
+            ctx.fillRect(x - 3*scale, y - 10*scale, 6*scale, 3*scale);
+            // Bow fill
+            ctx.fillStyle = '#FF69B4';
+            ctx.fillRect(x - 2*scale, y - 9*scale, 4*scale, scale);
+            // Bow center
             ctx.fillStyle = '#FF1493';
-            ctx.fillRect(x - 2*scale, y - 10*scale, 4*scale, 2*scale);
+            ctx.fillRect(x - scale/2, y - 9*scale, scale, scale);
         } else if (appearance.accessory === 'hat') {
+            // Hat outline
+            ctx.fillStyle = outlineColor;
+            ctx.fillRect(x - 4*scale, y - 12*scale, 8*scale, 4*scale);
+            // Hat fill
             ctx.fillStyle = '#4B0082';
-            ctx.fillRect(x - 3*scale, y - 12*scale, 6*scale, 3*scale);
-            ctx.fillRect(x - 2*scale, y - 14*scale, 4*scale, 2*scale);
+            ctx.fillRect(x - 3*scale, y - 11*scale, 6*scale, 2*scale);
+            // Hat band
+            ctx.fillStyle = '#8B008B';
+            ctx.fillRect(x - 3*scale, y - 10*scale, 6*scale, scale);
         }
+        
+        ctx.restore();
     }
 }
 
