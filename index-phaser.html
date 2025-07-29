@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guinea Pig Village - Phaser Edition</title>
+    <link rel="stylesheet" href="phaser-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <div id="game"></div>
+        
+        <!-- HUD Elements -->
+        <div id="hud" class="hud">
+            <div class="hud-top">
+                <div class="player-info">
+                    <span id="playerName">Piggy</span>
+                    <span id="coinCount">🥕 0</span>
+                </div>
+                <div class="badges">
+                    <span id="healthStars">⭐ 0</span>
+                    <span id="styleBadges">✨ 0</span>
+                </div>
+            </div>
+            <div class="hud-bottom">
+                <button id="pauseBtn">⏸️</button>
+                <div id="inventory" class="inventory"></div>
+            </div>
+        </div>
+
+        <!-- UI Panels -->
+        <div id="customizationPanel" class="panel">
+            <h2>Create Your Guinea Pig</h2>
+            <div class="customization-content">
+                <div class="preview-section">
+                    <div id="previewContainer"></div>
+                </div>
+                <div class="options-section">
+                    <div class="option-group">
+                        <label>Name:</label>
+                        <input type="text" id="pigName" maxlength="12" placeholder="Enter name">
+                    </div>
+                    <div class="option-group">
+                        <label>Fur Type:</label>
+                        <select id="furType">
+                            <option value="short">Short</option>
+                            <option value="long">Long</option>
+                            <option value="rosette">Rosette</option>
+                            <option value="ridgeback">Ridgeback</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label>Color:</label>
+                        <select id="furColor">
+                            <option value="brown">Brown</option>
+                            <option value="white">White</option>
+                            <option value="black">Black</option>
+                            <option value="ginger">Ginger</option>
+                            <option value="gray">Gray</option>
+                            <option value="patches">Patches</option>
+                            <option value="tricolor">Tricolor</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label>Accessory:</label>
+                        <select id="accessory">
+                            <option value="none">None</option>
+                            <option value="bow">Bow</option>
+                            <option value="hat">Tiny Hat</option>
+                        </select>
+                    </div>
+                    <div class="buttons">
+                        <button id="randomizeBtn">🎲 Randomize</button>
+                        <button id="resetBtn">🔄 Reset</button>
+                        <button id="continueBtn">▶️ Continue</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Touch Controls -->
+        <div id="touchControls" class="touch-controls hidden">
+            <div class="dpad">
+                <button class="dpad-btn up" data-key="ArrowUp">↑</button>
+                <button class="dpad-btn left" data-key="ArrowLeft">←</button>
+                <button class="dpad-btn right" data-key="ArrowRight">→</button>
+                <button class="dpad-btn down" data-key="ArrowDown">↓</button>
+            </div>
+            <button id="actionBtn" class="action-btn">E</button>
+        </div>
+    </div>
+
+    <!-- Load Phaser scenes and game scripts -->
+    <script src="phaser-game/GameData.js"></script>
+    <script src="phaser-game/AssetManager.js"></script>
+    <script src="phaser-game/scenes/BootScene.js"></script>
+    <script src="phaser-game/scenes/CustomizationScene.js"></script>
+    <script src="phaser-game/scenes/VillageScene.js"></script>
+    <script src="phaser-game/scenes/VetScene.js"></script>
+    <script src="phaser-game/scenes/FarmScene.js"></script>
+    <script src="phaser-game/scenes/ShopScene.js"></script>
+    <script src="phaser-game/scenes/GroomingScene.js"></script>
+    <script src="phaser-game/PhaserGame.js"></script>
+</body>
+</html>
