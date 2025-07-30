@@ -973,118 +973,136 @@ class SpriteRenderer {
         const outlineColor = '#000000'; // Black outline like in the example
         const bellyColor = '#F5F5DC';   // Cream belly color
         
-        // Helper function to draw with outline
-        const drawWithOutline = (fillColor, outlineWidth = scale) => {
-            ctx.fillStyle = outlineColor;
-            return fillColor;
-        };
-        
         // Save context for easier restoration
         ctx.save();
         
-        // Body outline (larger rounded rectangle)
-        ctx.fillStyle = outlineColor;
-        ctx.fillRect(x - 10*scale, y - 6*scale, 20*scale, 12*scale); // Body outline
-        ctx.fillRect(x - 8*scale, y - 8*scale, 16*scale, 16*scale);   // Head outline
+        // Enable pixelated rendering
+        ctx.imageSmoothingEnabled = false;
         
-        // Body fill (main color)
-        ctx.fillStyle = Array.isArray(baseColor) ? baseColor[0] : baseColor;
-        ctx.fillRect(x - 9*scale, y - 5*scale, 18*scale, 10*scale); // Main body
+        // Draw pixel by pixel for authentic pixel art (16x12 grid scaled up)
+        const pixelSize = scale;
         
-        // Head fill
-        ctx.fillRect(x - 7*scale, y - 7*scale, 14*scale, 14*scale);
+        // Define the guinea pig shape in a 16x12 grid
+        // 0 = transparent, 1 = outline, 2 = main color, 3 = belly/cream, 4 = dark patches
+        const sprite = [
+            [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],  // Row 0
+            [0,0,0,1,1,2,2,2,2,2,2,1,1,0,0,0],  // Row 1
+            [0,0,1,2,2,2,2,2,2,2,2,2,2,1,0,0],  // Row 2
+            [0,1,2,2,1,2,2,2,2,2,1,2,2,2,1,0],  // Row 3 - eyes
+            [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],  // Row 4
+            [1,2,2,3,3,3,3,3,3,3,3,3,2,2,2,1],  // Row 5 - belly start
+            [1,2,3,3,3,3,3,3,3,3,3,3,3,2,2,1],  // Row 6
+            [1,2,3,3,3,3,3,3,3,3,3,3,3,2,2,1],  // Row 7
+            [1,2,2,3,3,3,3,3,3,3,3,3,2,2,2,1],  // Row 8
+            [0,1,2,2,2,2,2,2,2,2,2,2,2,2,1,0],  // Row 9
+            [0,0,1,1,2,1,1,2,2,1,1,2,1,1,0,0],  // Row 10 - feet
+            [0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0],  // Row 11 - feet bottom
+        ];
         
-        // Belly/chest area (cream colored like in the image)
-        ctx.fillStyle = bellyColor;
-        ctx.fillRect(x - 6*scale, y - 2*scale, 12*scale, 6*scale); // Belly
-        ctx.fillRect(x - 4*scale, y - 6*scale, 8*scale, 6*scale);  // Face/chest
-        
-        // Patches for multicolor varieties
-        if (Array.isArray(baseColor)) {
-            ctx.fillStyle = baseColor[1];
-            // Patch on face
-            ctx.fillRect(x - 3*scale, y - 6*scale, 6*scale, 4*scale);
-            // Patch on body
-            ctx.fillRect(x + 2*scale, y - 3*scale, 5*scale, 4*scale);
-            
-            if (baseColor.length > 2) {
-                ctx.fillStyle = baseColor[2];
-                ctx.fillRect(x - 6*scale, y - 1*scale, 4*scale, 3*scale);
+        // Draw the sprite
+        for (let row = 0; row < sprite.length; row++) {
+            for (let col = 0; col < sprite[row].length; col++) {
+                const pixel = sprite[row][col];
+                if (pixel === 0) continue; // Skip transparent pixels
+                
+                let pixelColor;
+                switch(pixel) {
+                    case 1:
+                        pixelColor = outlineColor;
+                        break;
+                    case 2:
+                        pixelColor = Array.isArray(baseColor) ? baseColor[0] : baseColor;
+                        break;
+                    case 3:
+                        pixelColor = bellyColor;
+                        break;
+                    case 4:
+                        pixelColor = Array.isArray(baseColor) ? (baseColor[1] || baseColor[0]) : baseColor;
+                        break;
+                }
+                
+                ctx.fillStyle = pixelColor;
+                ctx.fillRect(
+                    x - 8*pixelSize + col*pixelSize, 
+                    y - 6*pixelSize + row*pixelSize, 
+                    pixelSize, 
+                    pixelSize
+                );
             }
         }
         
-        // Eyes (black dots with white highlights like in the example)
-        ctx.fillStyle = outlineColor;
-        ctx.fillRect(x - 4*scale, y - 5*scale, 2*scale, 2*scale); // Left eye
-        ctx.fillRect(x + 2*scale, y - 5*scale, 2*scale, 2*scale);  // Right eye
+        // Add patches for multicolor varieties
+        if (Array.isArray(baseColor) && baseColor.length > 1) {
+            ctx.fillStyle = baseColor[1];
+            // Face patch
+            ctx.fillRect(x - 3*pixelSize, y - 4*pixelSize, 4*pixelSize, 3*pixelSize);
+            // Body patch
+            ctx.fillRect(x + 2*pixelSize, y - pixelSize, 4*pixelSize, 3*pixelSize);
+            
+            if (baseColor.length > 2) {
+                ctx.fillStyle = baseColor[2];
+                // Additional patch
+                ctx.fillRect(x - 6*pixelSize, y + pixelSize, 3*pixelSize, 2*pixelSize);
+            }
+        }
         
-        // Eye highlights
+        // Draw eyes with white shine (pixel perfect)
         ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(x - 4*scale, y - 5*scale, scale, scale); // Left highlight
-        ctx.fillRect(x + 2*scale, y - 5*scale, scale, scale);  // Right highlight
+        ctx.fillRect(x - 4*pixelSize, y - 3*pixelSize, pixelSize, pixelSize); // Left eye shine
+        ctx.fillRect(x + 3*pixelSize, y - 3*pixelSize, pixelSize, pixelSize); // Right eye shine
         
-        // Ears with outline
-        ctx.fillStyle = outlineColor;
-        ctx.fillRect(x - 7*scale, y - 9*scale, 3*scale, 4*scale); // Left ear outline
-        ctx.fillRect(x + 4*scale, y - 9*scale, 3*scale, 4*scale); // Right ear outline
+        // Draw nose
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(x - pixelSize/2, y - pixelSize, pixelSize, pixelSize);
         
-        // Ear fills
-        ctx.fillStyle = Array.isArray(baseColor) ? baseColor[0] : baseColor;
-        ctx.fillRect(x - 6*scale, y - 8*scale, scale, 2*scale); // Left ear
-        ctx.fillRect(x + 5*scale, y - 8*scale, scale, 2*scale); // Right ear
-        
-        // Nose (small dark triangle)
-        ctx.fillStyle = outlineColor;
-        ctx.fillRect(x - scale/2, y - 3*scale, scale, scale);
-        
-        // Feet (small dark rectangles)
-        ctx.fillStyle = outlineColor;
-        ctx.fillRect(x - 7*scale, y + 3*scale, 2*scale, 2*scale); // Front left
-        ctx.fillRect(x - 3*scale, y + 3*scale, 2*scale, 2*scale); // Front right
-        ctx.fillRect(x + 2*scale, y + 3*scale, 2*scale, 2*scale); // Back left
-        ctx.fillRect(x + 6*scale, y + 3*scale, 2*scale, 2*scale); // Back right
-        
-        // Fur texture based on type (more subtle than before)
+        // Fur texture variations
         if (appearance.furType === 'long') {
-            ctx.fillStyle = Array.isArray(baseColor) ? baseColor[1] || baseColor[0] : baseColor;
-            // Softer fur spikes
-            for (let i = 0; i < 4; i++) {
-                ctx.fillRect(x - 6*scale + i*3*scale, y + 2*scale, scale, scale);
-            }
+            ctx.fillStyle = Array.isArray(baseColor) ? baseColor[0] : baseColor;
+            // Add some fur tufts
+            ctx.fillRect(x - 7*pixelSize, y + 2*pixelSize, pixelSize, pixelSize);
+            ctx.fillRect(x - 4*pixelSize, y + 3*pixelSize, pixelSize, pixelSize);
+            ctx.fillRect(x + 3*pixelSize, y + 3*pixelSize, pixelSize, pixelSize);
+            ctx.fillRect(x + 6*pixelSize, y + 2*pixelSize, pixelSize, pixelSize);
         } else if (appearance.furType === 'rosette') {
-            ctx.fillStyle = outlineColor;
             // Small rosette patterns
-            ctx.fillRect(x - 2*scale, y - 2*scale, scale, scale);
-            ctx.fillRect(x + 2*scale, y, scale, scale);
-        } else if (appearance.furType === 'ridgeback') {
-            ctx.fillStyle = outlineColor;
-            // Ridge pattern down the back
-            for (let i = 0; i < 3; i++) {
-                ctx.fillRect(x - scale/2, y - 4*scale + i*2*scale, scale, scale);
-            }
+            ctx.fillStyle = Array.isArray(baseColor) ? (baseColor[1] || baseColor[0]) : baseColor;
+            ctx.fillRect(x - 2*pixelSize, y, pixelSize, pixelSize);
+            ctx.fillRect(x + 2*pixelSize, y - 2*pixelSize, pixelSize, pixelSize);
+            ctx.fillRect(x, y + pixelSize, pixelSize, pixelSize);
         }
         
         // Accessories
         if (appearance.accessory === 'bow') {
-            // Bow outline
+            // Bow in pixel art style
             ctx.fillStyle = outlineColor;
-            ctx.fillRect(x - 3*scale, y - 10*scale, 6*scale, 3*scale);
+            // Bow outline
+            ctx.fillRect(x - 3*pixelSize, y - 7*pixelSize, 6*pixelSize, pixelSize);
+            ctx.fillRect(x - 4*pixelSize, y - 6*pixelSize, 8*pixelSize, pixelSize);
+            ctx.fillRect(x - 3*pixelSize, y - 5*pixelSize, 6*pixelSize, pixelSize);
+            
             // Bow fill
             ctx.fillStyle = '#FF69B4';
-            ctx.fillRect(x - 2*scale, y - 9*scale, 4*scale, scale);
+            ctx.fillRect(x - 3*pixelSize, y - 6*pixelSize, 2*pixelSize, pixelSize);
+            ctx.fillRect(x + pixelSize, y - 6*pixelSize, 2*pixelSize, pixelSize);
+            
             // Bow center
             ctx.fillStyle = '#FF1493';
-            ctx.fillRect(x - scale/2, y - 9*scale, scale, scale);
+            ctx.fillRect(x - pixelSize, y - 6*pixelSize, 2*pixelSize, pixelSize);
         } else if (appearance.accessory === 'hat') {
-            // Hat outline
+            // Top hat in pixel art style
             ctx.fillStyle = outlineColor;
-            ctx.fillRect(x - 4*scale, y - 12*scale, 8*scale, 4*scale);
+            // Hat outline
+            ctx.fillRect(x - 5*pixelSize, y - 7*pixelSize, 10*pixelSize, pixelSize);
+            ctx.fillRect(x - 3*pixelSize, y - 9*pixelSize, 6*pixelSize, 2*pixelSize);
+            
             // Hat fill
             ctx.fillStyle = '#4B0082';
-            ctx.fillRect(x - 3*scale, y - 11*scale, 6*scale, 2*scale);
+            ctx.fillRect(x - 4*pixelSize, y - 7*pixelSize, 8*pixelSize, pixelSize);
+            ctx.fillRect(x - 2*pixelSize, y - 8*pixelSize, 4*pixelSize, pixelSize);
+            
             // Hat band
-            ctx.fillStyle = '#8B008B';
-            ctx.fillRect(x - 3*scale, y - 10*scale, 6*scale, scale);
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(x - 2*pixelSize, y - 7*pixelSize, 4*pixelSize, pixelSize);
         }
         
         ctx.restore();
