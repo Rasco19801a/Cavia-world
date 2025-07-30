@@ -152,149 +152,196 @@ class GraphicsEngine {
             name: 'guineaPig'
         });
         
-        // Body (main ellipse)
-        const body = new Konva.Ellipse({
-            x: 0,
-            y: 0,
-            radiusX: 25,
-            radiusY: 15,
-            fill: this.getFurColor(config.furColor || 'brown'),
-            stroke: '#654321',
-            strokeWidth: 1
+        const pixelSize = 3; // Size of each pixel
+        const furColor = this.getFurColor(config.furColor || 'brown');
+        const bellyColor = '#F5F5DC';
+        const outlineColor = '#000000';
+        
+        // Define the guinea pig shape in a 16x12 grid (same as in game.js)
+        const sprite = [
+            [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],  // Row 0
+            [0,0,0,1,1,2,2,2,2,2,2,1,1,0,0,0],  // Row 1
+            [0,0,1,2,2,2,2,2,2,2,2,2,2,1,0,0],  // Row 2
+            [0,1,2,2,1,2,2,2,2,2,1,2,2,2,1,0],  // Row 3 - eyes
+            [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],  // Row 4
+            [1,2,2,3,3,3,3,3,3,3,3,3,2,2,2,1],  // Row 5 - belly start
+            [1,2,3,3,3,3,3,3,3,3,3,3,3,2,2,1],  // Row 6
+            [1,2,3,3,3,3,3,3,3,3,3,3,3,2,2,1],  // Row 7
+            [1,2,2,3,3,3,3,3,3,3,3,3,2,2,2,1],  // Row 8
+            [0,1,2,2,2,2,2,2,2,2,2,2,2,2,1,0],  // Row 9
+            [0,0,1,1,2,1,1,2,2,1,1,2,1,1,0,0],  // Row 10 - feet
+            [0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0],  // Row 11 - feet bottom
+        ];
+        
+        // Create pixels
+        const pixels = new Konva.Group({
+            x: -8 * pixelSize,
+            y: -6 * pixelSize
         });
         
-        // Head (circle)
-        const head = new Konva.Circle({
-            x: -20,
-            y: -5,
-            radius: 18,
-            fill: this.getFurColor(config.furColor || 'brown'),
-            stroke: '#654321',
-            strokeWidth: 1
-        });
+        // Draw the sprite
+        for (let row = 0; row < sprite.length; row++) {
+            for (let col = 0; col < sprite[row].length; col++) {
+                const pixel = sprite[row][col];
+                if (pixel === 0) continue; // Skip transparent pixels
+                
+                let pixelColor;
+                switch(pixel) {
+                    case 1:
+                        pixelColor = outlineColor;
+                        break;
+                    case 2:
+                        pixelColor = furColor;
+                        break;
+                    case 3:
+                        pixelColor = bellyColor;
+                        break;
+                }
+                
+                const rect = new Konva.Rect({
+                    x: col * pixelSize,
+                    y: row * pixelSize,
+                    width: pixelSize,
+                    height: pixelSize,
+                    fill: pixelColor
+                });
+                
+                pixels.add(rect);
+            }
+        }
         
-        // Eyes
-        const leftEye = new Konva.Circle({
-            x: -28,
-            y: -10,
-            radius: 3,
-            fill: 'black'
-        });
+        // Add patches for multicolor varieties
+        if (config.furColor === 'patches' || config.furColor === 'tricolor') {
+            // Face patch
+            const facePatch = new Konva.Rect({
+                x: 5 * pixelSize,
+                y: 2 * pixelSize,
+                width: 4 * pixelSize,
+                height: 3 * pixelSize,
+                fill: '#CD853F'
+            });
+            pixels.add(facePatch);
+            
+            // Body patch
+            const bodyPatch = new Konva.Rect({
+                x: 10 * pixelSize,
+                y: 5 * pixelSize,
+                width: 4 * pixelSize,
+                height: 3 * pixelSize,
+                fill: '#CD853F'
+            });
+            pixels.add(bodyPatch);
+        }
         
-        const rightEye = new Konva.Circle({
-            x: -22,
-            y: -10,
-            radius: 3,
-            fill: 'black'
+        // Eye shines (white pixels)
+        const leftEyeShine = new Konva.Rect({
+            x: 4 * pixelSize,
+            y: 3 * pixelSize,
+            width: pixelSize,
+            height: pixelSize,
+            fill: '#FFFFFF'
         });
+        pixels.add(leftEyeShine);
         
-        // Eye shine
-        const leftShine = new Konva.Circle({
-            x: -29,
-            y: -11,
-            radius: 1,
-            fill: 'white'
+        const rightEyeShine = new Konva.Rect({
+            x: 11 * pixelSize,
+            y: 3 * pixelSize,
+            width: pixelSize,
+            height: pixelSize,
+            fill: '#FFFFFF'
         });
-        
-        const rightShine = new Konva.Circle({
-            x: -23,
-            y: -11,
-            radius: 1,
-            fill: 'white'
-        });
+        pixels.add(rightEyeShine);
         
         // Nose
-        const nose = new Konva.Ellipse({
-            x: -32,
-            y: -5,
-            radiusX: 2,
-            radiusY: 1,
-            fill: 'pink'
+        const nose = new Konva.Rect({
+            x: 7.5 * pixelSize,
+            y: 5 * pixelSize,
+            width: pixelSize,
+            height: pixelSize,
+            fill: '#8B4513'
         });
+        pixels.add(nose);
         
-        // Ears
-        const leftEar = new Konva.Ellipse({
-            x: -22,
-            y: -18,
-            radiusX: 6,
-            radiusY: 8,
-            fill: this.getFurColor(config.furColor || 'brown'),
-            stroke: '#654321',
-            strokeWidth: 1,
-            rotation: -20
-        });
-        
-        const rightEar = new Konva.Ellipse({
-            x: -15,
-            y: -18,
-            radiusX: 6,
-            radiusY: 8,
-            fill: this.getFurColor(config.furColor || 'brown'),
-            stroke: '#654321',
-            strokeWidth: 1,
-            rotation: 20
-        });
-        
-        // Legs
-        const legs = [];
-        for (let i = 0; i < 4; i++) {
-            const leg = new Konva.Circle({
-                x: -15 + (i * 10),
-                y: 12,
-                radius: 4,
-                fill: this.getFurColor(config.furColor || 'brown'),
-                stroke: '#654321',
-                strokeWidth: 1
-            });
-            legs.push(leg);
-        }
-        
-        // Add all parts to pig group
-        pig.add(body);
-        pig.add(head);
-        pig.add(leftEar);
-        pig.add(rightEar);
-        pig.add(leftEye);
-        pig.add(rightEye);
-        pig.add(leftShine);
-        pig.add(rightShine);
-        pig.add(nose);
-        legs.forEach(leg => pig.add(leg));
-        
-        // Add accessory if specified
-        if (config.accessory && config.accessory !== 'none') {
-            const accessory = this.createAccessory(config.accessory);
-            pig.add(accessory);
-        }
+        pig.add(pixels);
         
         // Add breathing animation
-        this.addBreathingAnimation(body, head);
+        this.addBreathingAnimation(pixels);
         
-        // Add blinking animation
-        this.addBlinkingAnimation(leftEye, rightEye, leftShine, rightShine);
+        // Store reference for animations
+        pig.pixels = pixels;
+        pig.config = config;
         
-        // Store animation state
-        pig.animationState = {
-            isWalking: false,
-            direction: 'right',
-            legs: legs
-        };
-        
+        // Add to character layer
         this.characterLayer.add(pig);
+        
         return pig;
     }
     
+    // Helper function to get fur color
     getFurColor(colorName) {
         const colors = {
-            brown: '#8B4513',
-            white: '#F5F5F5',
+            brown: '#CD853F',
+            white: '#F5F5DC',
             black: '#2F2F2F',
-            ginger: '#FF8C00',
-            gray: '#808080',
-            patches: '#8B4513', // Will add pattern later
-            tricolor: '#8B4513'  // Will add pattern later
+            ginger: '#D2691E',
+            gray: '#A9A9A9',
+            patches: '#F5F5DC',
+            tricolor: '#F5F5DC'
         };
         return colors[colorName] || colors.brown;
+    }
+    
+    // Add breathing animation to guinea pig
+    addBreathingAnimation(pixelGroup) {
+        const breathe = new Konva.Animation((frame) => {
+            const scale = 1 + Math.sin(frame.time * 0.002) * 0.02;
+            pixelGroup.scaleY(scale);
+        }, this.characterLayer);
+        
+        breathe.start();
+        this.animations.add(breathe);
+    }
+    
+    // Walking animation for pixel art guinea pig
+    startWalkingAnimation(pig, direction = 'right') {
+        if (pig.walkingAnim) {
+            pig.walkingAnim.stop();
+        }
+        
+        const walkSpeed = 2;
+        const bounceHeight = 2;
+        
+        pig.walkingAnim = new Konva.Animation((frame) => {
+            // Move in direction
+            if (direction === 'right') {
+                pig.x(pig.x() + walkSpeed);
+                pig.scaleX(1);
+            } else if (direction === 'left') {
+                pig.x(pig.x() - walkSpeed);
+                pig.scaleX(-1);
+            }
+            
+            // Add bounce
+            const bounce = Math.abs(Math.sin(frame.time * 0.01)) * bounceHeight;
+            pig.y(pig.attrs.baseY - bounce);
+            
+            // Wrap around screen
+            if (pig.x() > this.width + 50) {
+                pig.x(-50);
+            } else if (pig.x() < -50) {
+                pig.x(this.width + 50);
+            }
+        }, this.characterLayer);
+        
+        pig.attrs.baseY = pig.y();
+        pig.walkingAnim.start();
+    }
+    
+    stopWalkingAnimation(pig) {
+        if (pig.walkingAnim) {
+            pig.walkingAnim.stop();
+            pig.y(pig.attrs.baseY);
+        }
     }
     
     createAccessory(type) {
@@ -341,130 +388,6 @@ class GraphicsEngine {
         }
         
         return accessory;
-    }
-    
-    addBreathingAnimation(body, head) {
-        const breatheTween = new Konva.Tween({
-            node: body,
-            duration: 2,
-            scaleX: 1.05,
-            scaleY: 1.02,
-            yoyo: true,
-            repeat: -1,
-            easing: Konva.Easings.EaseInOut
-        });
-        
-        const headBreathe = new Konva.Tween({
-            node: head,
-            duration: 2,
-            scaleX: 1.02,
-            scaleY: 1.02,
-            yoyo: true,
-            repeat: -1,
-            easing: Konva.Easings.EaseInOut
-        });
-        
-        breatheTween.play();
-        headBreathe.play();
-    }
-    
-    addBlinkingAnimation(leftEye, rightEye, leftShine, rightShine) {
-        const blink = () => {
-            const blinkTween = new Konva.Tween({
-                node: leftEye,
-                duration: 0.1,
-                scaleY: 0.1,
-                yoyo: true,
-                onFinish: () => {
-                    setTimeout(blink, 2000 + Math.random() * 3000); // Blink every 2-5 seconds
-                }
-            });
-            
-            const blinkTween2 = new Konva.Tween({
-                node: rightEye,
-                duration: 0.1,
-                scaleY: 0.1,
-                yoyo: true
-            });
-            
-            const shineBlink1 = new Konva.Tween({
-                node: leftShine,
-                duration: 0.1,
-                scaleY: 0.1,
-                yoyo: true
-            });
-            
-            const shineBlink2 = new Konva.Tween({
-                node: rightShine,
-                duration: 0.1,
-                scaleY: 0.1,
-                yoyo: true
-            });
-            
-            blinkTween.play();
-            blinkTween2.play();
-            shineBlink1.play();
-            shineBlink2.play();
-        };
-        
-        setTimeout(blink, 2000 + Math.random() * 3000);
-    }
-    
-    // Walking animation
-    startWalkingAnimation(pig, direction = 'right') {
-        if (pig.animationState.isWalking) return;
-        
-        pig.animationState.isWalking = true;
-        pig.animationState.direction = direction;
-        
-        // Scale flip for direction
-        pig.scaleX(direction === 'left' ? -1 : 1);
-        
-        // Animate legs
-        pig.animationState.legs.forEach((leg, index) => {
-            const tween = new Konva.Tween({
-                node: leg,
-                duration: 0.3,
-                y: leg.y() + (index % 2 === 0 ? -3 : 3),
-                yoyo: true,
-                repeat: -1,
-                easing: Konva.Easings.EaseInOut
-            });
-            tween.play();
-            leg.walkTween = tween;
-        });
-        
-        // Body bob
-        const bodyBob = new Konva.Tween({
-            node: pig,
-            duration: 0.6,
-            y: pig.y() - 2,
-            yoyo: true,
-            repeat: -1,
-            easing: Konva.Easings.EaseInOut
-        });
-        bodyBob.play();
-        pig.bodyBobTween = bodyBob;
-    }
-    
-    stopWalkingAnimation(pig) {
-        if (!pig.animationState.isWalking) return;
-        
-        pig.animationState.isWalking = false;
-        
-        // Stop leg animations
-        pig.animationState.legs.forEach(leg => {
-            if (leg.walkTween) {
-                leg.walkTween.destroy();
-                leg.walkTween = null;
-            }
-        });
-        
-        // Stop body bob
-        if (pig.bodyBobTween) {
-            pig.bodyBobTween.destroy();
-            pig.bodyBobTween = null;
-        }
     }
     
     // Particle effects
