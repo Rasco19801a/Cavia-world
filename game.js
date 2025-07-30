@@ -371,6 +371,8 @@ class Scene {
 // Customization Scene
 class CustomizationScene extends Scene {
     enter() {
+        // Hide the game canvas during customization
+        this.game.canvas.style.display = 'none';
         document.getElementById('customizationPanel').classList.remove('hidden');
         document.getElementById('hud').classList.add('hidden');
         this.game.updatePreview();
@@ -379,6 +381,8 @@ class CustomizationScene extends Scene {
     exit() {
         document.getElementById('customizationPanel').classList.add('hidden');
         document.getElementById('hud').classList.remove('hidden');
+        // Ensure canvas is visible when leaving customization
+        this.game.canvas.style.display = 'block';
     }
     
     update(deltaTime) {}
@@ -399,16 +403,18 @@ class VillageScene extends Scene {
         this.camera = { x: 0, y: 0 };
         this.tooltip = null;
         
-        // Building positions and info
+        // Building positions and info with pixel art style
         this.buildings = [
-            { x: 5, y: 3, width: 3, height: 3, name: 'Dierenarts', scene: 'vet', color: '#FF6B6B' },
-            { x: 12, y: 3, width: 3, height: 3, name: 'Boerderij', scene: 'farm', color: '#4ECDC4' },
-            { x: 5, y: 9, width: 3, height: 3, name: 'Speelgoedwinkel', scene: 'shop', color: '#45B7D1' },
-            { x: 12, y: 9, width: 3, height: 3, name: 'Trim-salon', scene: 'grooming', color: '#96CEB4' }
+            { x: 2, y: 5, width: 4, height: 4, name: 'Dierenarts', scene: 'vet', type: 'hospital' },
+            { x: 7, y: 5, width: 4, height: 4, name: 'Boerderij', scene: 'farm', type: 'barn' },
+            { x: 12, y: 5, width: 4, height: 4, name: 'Speelgoedwinkel', scene: 'shop', type: 'petshop' },
+            { x: 17, y: 5, width: 3, height: 4, name: 'Trim-salon', scene: 'grooming', type: 'salon' }
         ];
     }
     
     enter() {
+        // Show the game canvas
+        this.game.canvas.style.display = 'block';
         this.updateCamera();
     }
     
@@ -501,55 +507,229 @@ class VillageScene extends Scene {
     }
     
     render(ctx) {
-        // Clear canvas
-        ctx.fillStyle = '#90EE90'; // Softer green base
+        // Clear canvas with desert/sandy background
+        ctx.fillStyle = '#F4E4C1'; // Sandy beige color
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         
-        // Draw grass pattern
-        ctx.fillStyle = '#98FB98';
-        for (let x = 0; x < this.mapWidth; x++) {
-            for (let y = 0; y < this.mapHeight; y++) {
-                if ((x + y) % 2 === 0) {
-                    ctx.fillRect(
-                        x * this.tileSize - this.camera.x,
-                        y * this.tileSize - this.camera.y,
-                        this.tileSize,
-                        this.tileSize
-                    );
-                }
-            }
-        }
+        // Draw ground/street
+        ctx.fillStyle = '#D4A76A'; // Dirt road color
+        const roadY = 9 * this.tileSize - this.camera.y;
+        ctx.fillRect(0, roadY, ctx.canvas.width, this.tileSize * 2);
         
-        // Draw buildings
+        // Draw some grass patches at fixed positions
+        ctx.fillStyle = '#8B9556'; // Olive green
+        const grassPositions = [
+            {x: 1, y: 11}, {x: 3, y: 12}, {x: 5, y: 11}, {x: 8, y: 13},
+            {x: 10, y: 12}, {x: 13, y: 11}, {x: 15, y: 13}, {x: 18, y: 12}
+        ];
+        grassPositions.forEach(pos => {
+            const x = pos.x * this.tileSize - this.camera.x;
+            const y = pos.y * this.tileSize - this.camera.y;
+            this.drawGrassClump(ctx, x, y);
+        });
+        
+        // Draw buildings in pixel art style
         this.buildings.forEach(building => {
             const x = building.x * this.tileSize - this.camera.x;
             const y = building.y * this.tileSize - this.camera.y;
-            const width = building.width * this.tileSize;
-            const height = building.height * this.tileSize;
             
-            // Building base
-            ctx.fillStyle = building.color;
-            ctx.fillRect(x, y, width, height);
-            
-            // Building outline
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x, y, width, height);
-            
-            // Building sign
-            ctx.fillStyle = '#8B4513';
-            ctx.fillRect(x + 4, y + height - 12, width - 8, 8);
-            ctx.fillStyle = 'white';
-            ctx.font = '8px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(building.name, x + width/2, y + height - 6);
+            switch(building.type) {
+                case 'hospital':
+                    this.drawHospital(ctx, x, y);
+                    break;
+                case 'barn':
+                    this.drawBarn(ctx, x, y);
+                    break;
+                case 'petshop':
+                    this.drawPetShop(ctx, x, y);
+                    break;
+                case 'salon':
+                    this.drawSalon(ctx, x, y);
+                    break;
+            }
         });
         
-        // Draw player
+        // Draw player guinea pig
         const player = this.game.state.player;
         const playerX = player.x * this.tileSize - this.camera.x;
         const playerY = player.y * this.tileSize - this.camera.y;
         this.game.sprites.drawGuineaPig(ctx, playerX + 16, playerY + 16, player.appearance, 2);
+    }
+    
+    drawGrassClump(ctx, x, y) {
+        // Simple grass clump
+        ctx.fillStyle = '#8B9556';
+        ctx.fillRect(x, y, 4, 4);
+        ctx.fillRect(x + 6, y + 2, 4, 4);
+        ctx.fillRect(x + 3, y - 2, 4, 4);
+    }
+    
+    drawHospital(ctx, x, y) {
+        const width = 4 * this.tileSize;
+        const height = 4 * this.tileSize;
+        
+        // Building base - light beige
+        ctx.fillStyle = '#E8D4B0';
+        ctx.fillRect(x, y, width, height);
+        
+        // Roof - brown
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(x, y, width, this.tileSize);
+        
+        // Cross symbol on white background
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(x + width/2 - 16, y + 4, 32, 32);
+        ctx.fillStyle = '#FF0000';
+        const crossX = x + width/2 - 12;
+        const crossY = y + 8;
+        ctx.fillRect(crossX + 8, crossY, 8, 24);
+        ctx.fillRect(crossX, crossY + 8, 24, 8);
+        
+        // Door with handle
+        ctx.fillStyle = '#654321';
+        ctx.fillRect(x + width/2 - 12, y + height - 32, 24, 32);
+        ctx.fillStyle = '#444444';
+        ctx.fillRect(x + width/2 + 4, y + height - 20, 4, 4);
+        
+        // Windows with frames
+        ctx.fillStyle = '#654321';
+        ctx.fillRect(x + 6, y + 38, 20, 20);
+        ctx.fillRect(x + width - 26, y + 38, 20, 20);
+        ctx.fillStyle = '#87CEEB';
+        ctx.fillRect(x + 8, y + 40, 16, 16);
+        ctx.fillRect(x + width - 24, y + 40, 16, 16);
+        
+        // Window cross frames
+        ctx.strokeStyle = '#654321';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x + 8, y + 40, 16, 16);
+        ctx.strokeRect(x + width - 24, y + 40, 16, 16);
+        ctx.beginPath();
+        ctx.moveTo(x + 16, y + 40);
+        ctx.lineTo(x + 16, y + 56);
+        ctx.moveTo(x + 8, y + 48);
+        ctx.lineTo(x + 24, y + 48);
+        ctx.moveTo(x + width - 16, y + 40);
+        ctx.lineTo(x + width - 16, y + 56);
+        ctx.moveTo(x + width - 24, y + 48);
+        ctx.lineTo(x + width - 8, y + 48);
+        ctx.stroke();
+        
+        // Outline
+        ctx.strokeStyle = '#654321';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, width, height);
+    }
+    
+    drawBarn(ctx, x, y) {
+        const width = 4 * this.tileSize;
+        const height = 4 * this.tileSize;
+        
+        // Building base - orange/rust color
+        ctx.fillStyle = '#CD853F';
+        ctx.fillRect(x, y + this.tileSize, width, height - this.tileSize);
+        
+        // Roof - triangular shape
+        ctx.fillStyle = '#8B4513';
+        ctx.beginPath();
+        ctx.moveTo(x, y + this.tileSize);
+        ctx.lineTo(x + width/2, y);
+        ctx.lineTo(x + width, y + this.tileSize);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Barn doors - X pattern
+        ctx.strokeStyle = '#654321';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(x + width/4, y + height/2, width/2, height/2);
+        // X pattern
+        ctx.beginPath();
+        ctx.moveTo(x + width/4, y + height/2);
+        ctx.lineTo(x + 3*width/4, y + height);
+        ctx.moveTo(x + 3*width/4, y + height/2);
+        ctx.lineTo(x + width/4, y + height);
+        ctx.stroke();
+        
+        // Window
+        ctx.fillStyle = '#87CEEB';
+        ctx.fillRect(x + width/2 - 8, y + 24, 16, 16);
+        
+        // Outline
+        ctx.strokeStyle = '#654321';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y + this.tileSize, width, height - this.tileSize);
+    }
+    
+    drawPetShop(ctx, x, y) {
+        const width = 4 * this.tileSize;
+        const height = 4 * this.tileSize;
+        
+        // Building base - yellow/cream
+        ctx.fillStyle = '#FFDAB9';
+        ctx.fillRect(x, y, width, height);
+        
+        // Sign background
+        ctx.fillStyle = '#FFD700';
+        ctx.fillRect(x, y, width, 24);
+        
+        // Sign text
+        ctx.fillStyle = '#8B4513';
+        ctx.font = 'bold 12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('PET TOYS', x + width/2, y + 16);
+        
+        // Door
+        ctx.fillStyle = '#654321';
+        ctx.fillRect(x + 8, y + height - 32, 24, 32);
+        
+        // Shop window
+        ctx.fillStyle = '#87CEEB';
+        ctx.fillRect(x + width/2, y + 40, width/2 - 8, 32);
+        
+        // Display items in window (simple shapes)
+        ctx.fillStyle = '#FF69B4';
+        ctx.fillRect(x + width/2 + 4, y + 48, 8, 8);
+        ctx.fillStyle = '#32CD32';
+        ctx.fillRect(x + width/2 + 16, y + 52, 8, 8);
+        
+        // Outline
+        ctx.strokeStyle = '#8B4513';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, width, height);
+    }
+    
+    drawSalon(ctx, x, y) {
+        const width = 3 * this.tileSize;
+        const height = 4 * this.tileSize;
+        
+        // Building base - pink/salmon
+        ctx.fillStyle = '#FFA07A';
+        ctx.fillRect(x, y, width, height);
+        
+        // Roof
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(x, y, width, 20);
+        
+        // Sign
+        ctx.fillStyle = '#FFB6C1';
+        ctx.fillRect(x, y + 20, width, 20);
+        ctx.fillStyle = '#8B4513';
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('SALON', x + width/2, y + 34);
+        
+        // Door
+        ctx.fillStyle = '#654321';
+        ctx.fillRect(x + 8, y + height - 32, 20, 32);
+        
+        // Window
+        ctx.fillStyle = '#87CEEB';
+        ctx.fillRect(x + width - 28, y + 48, 20, 20);
+        
+        // Outline
+        ctx.strokeStyle = '#8B4513';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, width, height);
     }
 }
 
@@ -564,6 +744,7 @@ class VetScene extends Scene {
     }
     
     enter() {
+        this.game.canvas.style.display = 'block';
         this.timeLeft = 3000;
         this.completed = false;
     }
@@ -653,6 +834,7 @@ class FarmScene extends Scene {
     }
     
     enter() {
+        this.game.canvas.style.display = 'block';
         this.timeLeft = 10000;
         this.collected = 0;
         this.completed = false;
@@ -781,6 +963,7 @@ class ShopScene extends Scene {
     }
     
     enter() {
+        this.game.canvas.style.display = 'block';
         this.selectedItem = 0;
     }
     
@@ -859,6 +1042,7 @@ class GroomingScene extends Scene {
     }
     
     enter() {
+        this.game.canvas.style.display = 'block';
         this.brushStrokes = 0;
         this.completed = false;
         this.particles = [];
@@ -937,6 +1121,7 @@ class GroomingScene extends Scene {
 
 class PauseScene extends Scene {
     enter() {
+        this.game.canvas.style.display = 'block';
         document.getElementById('pauseMenu').classList.remove('hidden');
     }
     
